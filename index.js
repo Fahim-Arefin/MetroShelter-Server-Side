@@ -8,6 +8,7 @@ const mongoose = require("mongoose");
 
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+const User = require("./model/user");
 
 //connection with mongoose
 // -------------------------------------------------------------------------------------------------------------------
@@ -98,4 +99,39 @@ app.post("/logout", (req, res) => {
   res.clearCookie("token", { maxAge: 0 });
   res.json({ success: true });
 });
+
+// User Route
+// ------------------
+
+// create a user
+app.post("/users", async (req, res) => {
+  try {
+    const body = req.body;
+    const user = new User(body);
+    const data = await user.save();
+    res.status(201).send(data);
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
+});
+
+// get all user
+app.get("/users", async (req, res) => {
+  const data = await User.find({});
+  res.send(data);
+});
+
+// get a user
+app.get("/users/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const data = await User.findOne({ email });
+    res.send(data);
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
+});
+
 // -------------------------------------------------------------------------------------------------------------------
