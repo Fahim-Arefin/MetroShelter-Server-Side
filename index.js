@@ -9,6 +9,7 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const User = require("./model/user");
+const Property = require("./model/property");
 
 //connection with mongoose
 // -------------------------------------------------------------------------------------------------------------------
@@ -127,6 +128,24 @@ app.get("/users/:email", async (req, res) => {
   try {
     const { email } = req.params;
     const data = await User.findOne({ email });
+    res.send(data);
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
+});
+
+// Property Route
+app.get("/properties", async (req, res) => {
+  const data = await Property.find({});
+  res.send(data);
+});
+
+app.post("/properties", async (req, res) => {
+  try {
+    const body = req.body;
+    const properties = new Property(body);
+    const data = await properties.save();
     res.send(data);
   } catch (error) {
     console.log(error);
