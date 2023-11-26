@@ -1,5 +1,6 @@
 //define a User model
 const mongoose = require("mongoose");
+const cloudinary = require("cloudinary").v2;
 
 const propertySchema = new mongoose.Schema({
   image: {
@@ -53,6 +54,20 @@ const propertySchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+});
+
+propertySchema.post("findOneAndDelete", async function (deletedJob) {
+  try {
+    const parts = deletedJob.image.split("/");
+    const publicIdWithFolder = parts.slice(-2).join("/").split(".")[0];
+
+    await cloudinary.uploader.destroy(publicIdWithFolder);
+    console.log(
+      `Deleted image with public ID: ${publicIdWithFolder} from Cloudinary`
+    );
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 const Property = mongoose.model("Property", propertySchema);

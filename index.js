@@ -180,6 +180,19 @@ app.get("/properties", async (req, res) => {
   res.send(data);
 });
 
+// get users property
+app.get("/properties/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const data = await Property.find({ authorEmail: email });
+    res.send(data);
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
+});
+
+// create a property
 app.post("/properties", upload.single("image"), async (req, res) => {
   try {
     const body = req.body;
@@ -194,6 +207,17 @@ app.post("/properties", upload.single("image"), async (req, res) => {
     const properties = new Property(data);
     const response = await properties.save();
     res.send(response);
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
+});
+
+app.delete("/properties/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Property.findByIdAndDelete(id);
+    res.send({ message: "Deleted Successfully" });
   } catch (error) {
     console.log(error);
     res.send(error);
