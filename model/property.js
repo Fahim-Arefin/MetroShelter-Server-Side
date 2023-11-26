@@ -19,11 +19,11 @@ const propertySchema = new mongoose.Schema({
     required: true,
   },
   lat: {
-    type: String,
+    type: Number,
     required: true,
   },
   lng: {
-    type: String,
+    type: Number,
     required: true,
   },
   fullAddress: {
@@ -42,8 +42,16 @@ const propertySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  description: {
+    type: String,
+    required: true,
+  },
   status: {
     type: String,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
 });
 

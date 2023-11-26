@@ -49,9 +49,9 @@ app.use(cookieParser());
 
 // Configure Cloudinary
 cloudinary.config({
-  cloud_name: "dshiwsbap",
-  api_key: "544762478192835",
-  api_secret: "WNaCwOPf2GtSmhcRE6vRRHZpOBA",
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
 // Configure Multer to use Cloudinary as storage
@@ -184,11 +184,16 @@ app.post("/properties", upload.single("image"), async (req, res) => {
   try {
     const body = req.body;
     const file = req.file?.path;
-    console.log(body);
-    console.log(file);
-    // const properties = new Property(body);
-    // const data = await properties.save();
-    // res.send(data);
+    // console.log(body);
+    // console.log(file);
+    if (!file) {
+      return next(new Error("File Not Found!! Maybe invalid filterType"));
+    }
+    const data = { ...body, image: file };
+    // console.log(data);
+    const properties = new Property(data);
+    const response = await properties.save();
+    res.send(response);
   } catch (error) {
     console.log(error);
     res.send(error);
