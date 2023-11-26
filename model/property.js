@@ -22,21 +22,28 @@ const propertySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  lan: {
+  lng: {
+    type: String,
+    required: true,
+  },
+  fullAddress: {
+    type: String,
+    required: true,
+  },
+  startPrice: {
+    type: Number,
+    required: true,
+  },
+  endPrice: {
+    type: Number,
+    required: true,
+  },
+  authorEmail: {
     type: String,
     required: true,
   },
   status: {
     type: String,
-    required: true,
-  },
-  priceRange: {
-    type: String,
-    required: true,
-  },
-  description: {
-    type: String,
-    required: true,
   },
 });
 

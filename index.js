@@ -11,6 +11,10 @@ const cookieParser = require("cookie-parser");
 const User = require("./model/user");
 const Property = require("./model/property");
 
+const multer = require("multer");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("cloudinary").v2;
+
 //connection with mongoose
 // -------------------------------------------------------------------------------------------------------------------
 mongoose
@@ -42,6 +46,41 @@ app.use(
 );
 app.use(express.json());
 app.use(cookieParser());
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: "dshiwsbap",
+  api_key: "544762478192835",
+  api_secret: "WNaCwOPf2GtSmhcRE6vRRHZpOBA",
+});
+
+// Configure Multer to use Cloudinary as storage
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "property", // Set your desired folder name in Cloudinary for images
+    allowed_formats: ["jpg", "jpeg", "png", "gif"], // Add the allowed image formats
+    // transformation: [{ width: 500, height: 500, crop: "limit" }],
+  },
+});
+
+const fileFilter = (req, file, cb) => {
+  // Check if the file's MIME type is an image type
+  if (file.mimetype.startsWith("image/")) {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
+
+// multer middleware
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 1024 * 1024 * 5,
+  },
+});
 
 // Varify Toke middleware
 const varifyToken = (req, res, next) => {
@@ -141,12 +180,15 @@ app.get("/properties", async (req, res) => {
   res.send(data);
 });
 
-app.post("/properties", async (req, res) => {
+app.post("/properties", upload.single("image"), async (req, res) => {
   try {
     const body = req.body;
-    const properties = new Property(body);
-    const data = await properties.save();
-    res.send(data);
+    const file = req.file?.path;
+    console.log(body);
+    console.log(file);
+    // const properties = new Property(body);
+    // const data = await properties.save();
+    // res.send(data);
   } catch (error) {
     console.log(error);
     res.send(error);
