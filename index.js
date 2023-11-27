@@ -192,6 +192,18 @@ app.get("/properties/:email", async (req, res) => {
   }
 });
 
+// get a property
+app.get("/properties/show/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = await Property.findById(id);
+    res.send(data);
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
+});
+
 // create a property
 app.post("/properties", upload.single("image"), async (req, res) => {
   try {
@@ -213,6 +225,33 @@ app.post("/properties", upload.single("image"), async (req, res) => {
   }
 });
 
+app.patch("/properties/:id", upload.single("image"), async (req, res) => {
+  try {
+    const body = req.body;
+    const file = req.file?.path;
+    const { id } = req.params;
+    console.log(id);
+    console.log(body);
+    console.log("file", file);
+    if (!file) {
+      // image will not update
+      const response = await Property.findByIdAndUpdate(id, body);
+      res.send(response);
+    } else {
+      // TODO : destroy previos img
+
+      // image update
+      const data = { ...body, image: file };
+      // console.log(data);
+      const response = await Property.findByIdAndUpdate(id, data);
+      res.send(response);
+    }
+  } catch (error) {
+    res.send(error);
+  }
+});
+
+// delete a property
 app.delete("/properties/:id", async (req, res) => {
   try {
     const { id } = req.params;
