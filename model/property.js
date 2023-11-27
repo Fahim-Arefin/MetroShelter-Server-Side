@@ -39,6 +39,14 @@ const propertySchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  authorName: {
+    type: String,
+    required: true,
+  },
+  authorImg: {
+    type: String,
+    required: true,
+  },
   authorEmail: {
     type: String,
     required: true,

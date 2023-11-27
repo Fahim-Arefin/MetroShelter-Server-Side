@@ -176,8 +176,19 @@ app.get("/users/:email", async (req, res) => {
 
 // Property Route
 app.get("/properties", async (req, res) => {
-  const data = await Property.find({});
-  res.send(data);
+  try {
+    const { status } = req.query;
+    console.log(status);
+    if (status === "verified") {
+      const data = await Property.find({ status: "verified" });
+      res.send(data);
+    } else {
+      const data = await Property.find({});
+      res.send(data);
+    }
+  } catch (error) {
+    res.send(error);
+  }
 });
 
 // get users property
