@@ -58,6 +58,9 @@ const propertySchema = new mongoose.Schema({
   status: {
     type: String,
   },
+  isAdvertise: {
+    type: Boolean,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

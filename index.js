@@ -186,10 +186,23 @@ app.get("/properties", async (req, res) => {
       const data = await Property.find({ status: "verified" });
       res.send(data);
     } else {
-      const data = await Property.find({});
+      const data = await Property.find({}).sort({ createdAt: -1 });
       res.send(data);
     }
   } catch (error) {
+    res.send(error);
+  }
+});
+
+//
+app.patch("/properties/advertise/:id", async (req, res) => {
+  try {
+    const { isAdvertise } = req.body;
+    const { id } = req.params;
+    const data = await Property.findByIdAndUpdate(id, { isAdvertise });
+    res.send(data);
+  } catch (error) {
+    console.log(error);
     res.send(error);
   }
 });
@@ -199,6 +212,15 @@ app.get("/properties/:email", async (req, res) => {
   try {
     const { email } = req.params;
     const data = await Property.find({ authorEmail: email });
+    res.send(data);
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
+});
+app.get("/properties/show/advertise", async (req, res) => {
+  try {
+    const data = await Property.find({ isAdvertise: true });
     res.send(data);
   } catch (error) {
     console.log(error);
@@ -309,7 +331,9 @@ app.post("/reviews", async (req, res) => {
 
 // get all reviews
 app.get("/reviews", async (req, res) => {
-  const data = await Review.find({}).populate("property");
+  const data = await Review.find({})
+    .populate("property")
+    .sort({ createdAt: -1 });
   res.send(data);
 });
 
@@ -317,7 +341,7 @@ app.get("/reviews", async (req, res) => {
 app.get("/reviews/:email", async (req, res) => {
   try {
     const { email } = req.params;
-    const data = await Review.find({ email });
+    const data = await Review.find({ email }).populate("property");
     res.send(data);
   } catch (error) {
     console.log(error);
