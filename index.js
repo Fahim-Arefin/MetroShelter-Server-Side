@@ -311,6 +311,19 @@ app.get("/reviews", async (req, res) => {
   res.send(data);
 });
 
+// get specific reviews
+app.get("/reviews/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const data = await Review.find({ email });
+    res.send(data);
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
+});
+
+// delete a review
 app.delete("/reviews/:id", async (req, res) => {
   try {
     const { id } = req.params;
