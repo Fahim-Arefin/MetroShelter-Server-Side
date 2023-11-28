@@ -13,6 +13,7 @@ const Property = require("./model/property");
 
 const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const Review = require("./model/review");
 const cloudinary = require("cloudinary").v2;
 
 //connection with mongoose
@@ -207,7 +208,7 @@ app.get("/properties/:email", async (req, res) => {
 app.get("/properties/show/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const data = await Property.findById(id);
+    const data = await Property.findById(id).populate("propertyReviews");
     res.send(data);
   } catch (error) {
     console.log(error);
@@ -274,4 +275,59 @@ app.delete("/properties/:id", async (req, res) => {
   }
 });
 
+// Review Route
+
+// create a review
+app.post("/reviews", async (req, res) => {
+  try {
+    const body = req.body;
+    const data = {
+      name: body.name,
+      email: body.email,
+      image: body.image,
+      reviewDescription: body.reviewDescription,
+    };
+    const { property } = body;
+    const review = new Review(data);
+
+    review.property = property;
+    await review.save();
+
+    const prop = await Property.findById(property._id);
+    prop.propertyReviews.push(review);
+
+    await prop.save();
+
+    res.status(201).send({ message: "Success" });
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
+});
+
+// get all reviews
+app.get("/reviews", async (req, res) => {
+  const data = await Review.find({}).populate("property");
+  res.send(data);
+});
+
+app.delete("/reviews/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Find the review by ID
+    const review = await Review.findById(id);
+
+    // If the review doesn't exist, return a 404 Not Found response
+    if (!review) {
+      return res.status(404).json({ message: "Review not found" });
+    }
+
+    // Delete the review
+    await review.deleteOne();
+    res.send({ message: "Deleted Successfully" });
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
+});
 // -------------------------------------------------------------------------------------------------------------------

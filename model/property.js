@@ -62,6 +62,7 @@ const propertySchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  propertyReviews: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }],
 });
 
 propertySchema.post("findOneAndDelete", async function (deletedJob) {
