@@ -14,6 +14,8 @@ const Property = require("./model/property");
 const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const Review = require("./model/review");
+const WishList = require("./model/wishList");
+const Offer = require("./model/offer");
 const cloudinary = require("cloudinary").v2;
 
 //connection with mongoose
@@ -343,4 +345,92 @@ app.delete("/reviews/:id", async (req, res) => {
     res.send(error);
   }
 });
+
+// wishList Route
+app.post("/wishlists", async (req, res) => {
+  try {
+    const body = req.body;
+    const data = {
+      authorEmail: body.authorEmail,
+    };
+    const wishlist = new WishList(data);
+    wishlist.property = body.propertyData;
+    await wishlist.save();
+    res.status(201).send({ msg: "Successfully Created" });
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
+});
+
+app.get("/wishlists/offers", async (req, res) => {
+  const data = await Offer.find({}).populate("property");
+  res.send(data);
+});
+
+// get specific wishlist
+app.get("/wishlists/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const data = await WishList.find({ authorEmail: email }).populate(
+      "property"
+    );
+    res.send(data);
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
+});
+
+// delete a wishlist
+app.delete("/wishlists/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    await WishList.findByIdAndDelete(id);
+    res.send({ message: "Deleted Successfully" });
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
+});
+
+app.patch("/wishlists/offers/:id", async (req, res) => {
+  try {
+    const body = req.body;
+    const data = await Offer.findByIdAndUpdate(req.params.id, {
+      status: body.status,
+    });
+    res.send(data);
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
+});
+
+app.post("/wishlists/offers", async (req, res) => {
+  try {
+    const { buyerEmail, offerAmount, offerDate, status, buyerName } = req.body;
+    const data = { buyerEmail, offerAmount, offerDate, status, buyerName };
+    const offer = new Offer(data);
+    offer.property = req.body.property;
+    await offer.save();
+    res.send({ msg: "success" });
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
+});
+
+// get specific offer
+app.get("/wishlists/offers/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const data = await Offer.find({ buyerEmail: email }).populate("property");
+    res.send(data);
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
+});
+
 // -------------------------------------------------------------------------------------------------------------------
