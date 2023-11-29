@@ -39,11 +39,11 @@ mongoose
 
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
-    // origin: [
-    //   "https://jobzen-45cf0.web.app",
-    //   "https://jobzen-45cf0.firebaseapp.com",
-    // ],
+    // origin: ["http://localhost:5173"],
+    origin: [
+      "https://metroshelter-7a7d6.web.app",
+      "https://metroshelter-7a7d6.firebaseapp.com",
+    ],
     credentials: true,
   })
 );
@@ -100,6 +100,15 @@ const varifyToken = (req, res, next) => {
   });
 };
 
+const varifyUser = async (req, res, next) => {
+  const email = req.user.email;
+  const user = await User.findOne({ email });
+  if (user.role === "user") {
+    next();
+  } else {
+    res.status(403).send({ message: "Forbidden Access" });
+  }
+};
 const varifyAdmin = async (req, res, next) => {
   const email = req.user.email;
   const user = await User.findOne({ email });
@@ -168,7 +177,7 @@ app.post("/logout", (req, res) => {
 });
 
 // User Route
-// ------------------
+// --------------------------------------------------------------------------------------------------------------
 
 // create a user
 app.post("/users", async (req, res) => {
@@ -188,7 +197,6 @@ app.get("/users", async (req, res) => {
   const data = await User.find({});
   res.send(data);
 });
-
 // get a user
 app.get("/users/:email", async (req, res) => {
   try {
@@ -230,13 +238,32 @@ app.get("/users/user/:email", async (req, res) => {
   }
 });
 
+app.patch("/users/role/:id", async (req, res) => {
+  try {
+    const body = req.body;
+    const { id } = req.params;
+    console.log(body);
+    console.log(id);
+    const data = await User.findByIdAndUpdate(req.params.id, body.updatedData);
+    res.send(data);
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
+});
+
 // Property Route
+// --------------------------------------------------------------------------------------------------------------------
+
+// get all property
 app.get("/properties", async (req, res) => {
   try {
     const { status } = req.query;
     console.log(status);
     if (status === "verified") {
-      const data = await Property.find({ status: "verified" });
+      const data = await Property.find({ status: "verified" }).sort({
+        createdAt: -1,
+      });
       res.send(data);
     } else {
       const data = await Property.find({}).sort({ createdAt: -1 });
@@ -271,9 +298,13 @@ app.get("/properties/:email", varifyToken, varifyAgent, async (req, res) => {
     res.send(error);
   }
 });
+
+//
 app.get("/properties/show/advertise", async (req, res) => {
   try {
-    const data = await Property.find({ isAdvertise: true });
+    const data = await Property.find({ isAdvertise: true }).sort({
+      createdAt: -1,
+    });
     res.send(data);
   } catch (error) {
     console.log(error);
@@ -351,8 +382,9 @@ app.delete("/properties/:id", async (req, res) => {
     res.send(error);
   }
 });
-
+// --------------------------------------------------------------------------------------------------
 // Review Route
+// --------------------------------------------------------------------------------------------------
 
 // create a review
 app.post("/reviews", async (req, res) => {
@@ -422,8 +454,10 @@ app.delete("/reviews/:id", async (req, res) => {
     res.send(error);
   }
 });
+// --------------------------------------------------------------------------------------------------
 
 // wishList Route
+// --------------------------------------------------------------------------------------------------
 app.post("/wishlists", async (req, res) => {
   try {
     const body = req.body;
@@ -446,12 +480,12 @@ app.get("/wishlists/offers", async (req, res) => {
 });
 
 // get specific wishlist
-app.get("/wishlists/:email", async (req, res) => {
+app.get("/wishlists/:email", varifyToken, async (req, res) => {
   try {
     const { email } = req.params;
-    const data = await WishList.find({ authorEmail: email }).populate(
-      "property"
-    );
+    const data = await WishList.find({ authorEmail: email })
+      .populate("property")
+      .sort({ createdAt: -1 });
     res.send(data);
   } catch (error) {
     console.log(error);
@@ -483,6 +517,19 @@ app.patch("/wishlists/offers/:id", async (req, res) => {
     res.send(error);
   }
 });
+app.patch("/wishlists/offers/:id/pay", async (req, res) => {
+  try {
+    const body = req.body;
+    const data = await Offer.findByIdAndUpdate(req.params.id, {
+      status: "bought",
+      transactionId: body.transactionId,
+    });
+    res.send(data);
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
+});
 
 app.post("/wishlists/offers", async (req, res) => {
   try {
@@ -499,10 +546,12 @@ app.post("/wishlists/offers", async (req, res) => {
 });
 
 // get specific offer
-app.get("/wishlists/offers/:email", async (req, res) => {
+app.get("/wishlists/offers/:email", varifyToken, async (req, res) => {
   try {
     const { email } = req.params;
-    const data = await Offer.find({ buyerEmail: email }).populate("property");
+    const data = await Offer.find({ buyerEmail: email })
+      .populate("property")
+      .sort({ createdAt: -1 });
     res.send(data);
   } catch (error) {
     console.log(error);

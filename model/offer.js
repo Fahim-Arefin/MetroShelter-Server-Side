@@ -21,6 +21,9 @@ const offerSchema = new mongoose.Schema({
   status: {
     type: String,
   },
+  transactionId: {
+    type: String,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
