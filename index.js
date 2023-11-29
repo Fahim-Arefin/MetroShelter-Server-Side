@@ -85,7 +85,7 @@ const upload = multer({
   },
 });
 
-// Varify Toke middleware
+// Varify Token middleware
 const varifyToken = (req, res, next) => {
   const token = req.cookies.token;
   if (!token) {
@@ -98,6 +98,30 @@ const varifyToken = (req, res, next) => {
     req.user = decoded;
     next();
   });
+};
+
+const varifyAdmin = async (req, res, next) => {
+  const email = req.user.email;
+  const user = await User.findOne({ email });
+  if (user.role === "admin") {
+    next();
+  } else {
+    res.status(403).send({ message: "Forbidden Access" });
+  }
+};
+
+const varifyAgent = async (req, res, next) => {
+  try {
+    const email = req.user.email;
+    const user = await User.findOne({ email });
+    if (user.role === "agent") {
+      next();
+    } else {
+      res.status(403).send({ message: "Forbidden Access" });
+    }
+  } catch (error) {
+    res.send(error);
+  }
 };
 
 // -------------------------------------------------------------------------------------------------------------------
@@ -177,6 +201,35 @@ app.get("/users/:email", async (req, res) => {
   }
 });
 
+app.get("/users/admin/:email", async (req, res) => {
+  const { email } = req.params;
+  const data = await User.findOne({ email });
+  if (data.role === "admin") {
+    res.send(true);
+  } else {
+    res.send(false);
+  }
+});
+
+app.get("/users/agent/:email", async (req, res) => {
+  const { email } = req.params;
+  const data = await User.findOne({ email });
+  if (data.role === "agent") {
+    res.send(true);
+  } else {
+    res.send(false);
+  }
+});
+app.get("/users/user/:email", async (req, res) => {
+  const { email } = req.params;
+  const data = await User.findOne({ email });
+  if (data.role === "user") {
+    res.send(true);
+  } else {
+    res.send(false);
+  }
+});
+
 // Property Route
 app.get("/properties", async (req, res) => {
   try {
@@ -208,7 +261,7 @@ app.patch("/properties/advertise/:id", async (req, res) => {
 });
 
 // get users property
-app.get("/properties/:email", async (req, res) => {
+app.get("/properties/:email", varifyToken, varifyAgent, async (req, res) => {
   try {
     const { email } = req.params;
     const data = await Property.find({ authorEmail: email });
@@ -338,7 +391,7 @@ app.get("/reviews", async (req, res) => {
 });
 
 // get specific reviews
-app.get("/reviews/:email", async (req, res) => {
+app.get("/reviews/:email", varifyToken, async (req, res) => {
   try {
     const { email } = req.params;
     const data = await Review.find({ email }).populate("property");
