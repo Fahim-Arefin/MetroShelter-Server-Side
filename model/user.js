@@ -14,6 +14,9 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  isFroud: {
+    type: Boolean,
+  },
 });
 
 const User = mongoose.model("User", userSchema);

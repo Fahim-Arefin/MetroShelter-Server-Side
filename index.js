@@ -39,11 +39,11 @@ mongoose
 
 app.use(
   cors({
-    // origin: ["http://localhost:5173"],
-    origin: [
-      "https://metroshelter-7a7d6.web.app",
-      "https://metroshelter-7a7d6.firebaseapp.com",
-    ],
+    origin: ["http://localhost:5173"],
+    // origin: [
+    //   "https://metroshelter-7a7d6.web.app",
+    //   "https://metroshelter-7a7d6.firebaseapp.com",
+    // ],
     credentials: true,
   })
 );
@@ -155,25 +155,35 @@ app.get("/", (req, res) => {
 
 // Isuue Token
 app.post("/jwt", (req, res) => {
-  const body = req.body;
-  // console.log(body);
-  const token = jwt.sign(body, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: "1h",
-  });
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
-  });
-  res.json({ success: true });
+  try {
+    const body = req.body;
+    // console.log(body);
+    const token = jwt.sign(body, process.env.ACCESS_TOKEN_SECRET, {
+      expiresIn: "1h",
+    });
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+    });
+    res.json({ success: true });
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
 });
 
 // Delete Token
 app.post("/logout", (req, res) => {
-  const body = req.body;
-  // console.log("logging out user...", body);
-  res.clearCookie("token", { maxAge: 0 });
-  res.json({ success: true });
+  try {
+    const body = req.body;
+    // console.log("logging out user...", body);
+    res.clearCookie("token", { maxAge: 0 });
+    res.json({ success: true });
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
 });
 
 // User Route
@@ -194,8 +204,13 @@ app.post("/users", async (req, res) => {
 
 // get all user
 app.get("/users", async (req, res) => {
-  const data = await User.find({});
-  res.send(data);
+  try {
+    const data = await User.find({});
+    res.send(data);
+  } catch (error) {
+    res.send(error);
+    console.log(error);
+  }
 });
 // get a user
 app.get("/users/:email", async (req, res) => {
@@ -209,32 +224,58 @@ app.get("/users/:email", async (req, res) => {
   }
 });
 
+app.delete("/users/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    await User.findByIdAndDelete(id);
+    res.send({ msg: "User Deleted SuccessFully" });
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
+});
+
 app.get("/users/admin/:email", async (req, res) => {
-  const { email } = req.params;
-  const data = await User.findOne({ email });
-  if (data.role === "admin") {
-    res.send(true);
-  } else {
-    res.send(false);
+  try {
+    const { email } = req.params;
+    const data = await User.findOne({ email });
+    if (data.role === "admin") {
+      res.send(true);
+    } else {
+      res.send(false);
+    }
+  } catch (error) {
+    console.log(error);
+    res.send(error);
   }
 });
 
 app.get("/users/agent/:email", async (req, res) => {
-  const { email } = req.params;
-  const data = await User.findOne({ email });
-  if (data.role === "agent") {
-    res.send(true);
-  } else {
-    res.send(false);
+  try {
+    const { email } = req.params;
+    const data = await User.findOne({ email });
+    if (data.role === "agent") {
+      res.send(true);
+    } else {
+      res.send(false);
+    }
+  } catch (error) {
+    console.log(error);
+    res.send(error);
   }
 });
 app.get("/users/user/:email", async (req, res) => {
-  const { email } = req.params;
-  const data = await User.findOne({ email });
-  if (data.role === "user") {
-    res.send(true);
-  } else {
-    res.send(false);
+  try {
+    const { email } = req.params;
+    const data = await User.findOne({ email });
+    if (data.role === "user") {
+      res.send(true);
+    } else {
+      res.send(false);
+    }
+  } catch (error) {
+    console.log(error);
+    res.send(error);
   }
 });
 
@@ -245,6 +286,16 @@ app.patch("/users/role/:id", async (req, res) => {
     console.log(body);
     console.log(id);
     const data = await User.findByIdAndUpdate(req.params.id, body.updatedData);
+    res.send(data);
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
+});
+
+app.patch("/users/froud/:id", async (req, res) => {
+  try {
+    const data = await User.findByIdAndUpdate(req.params.id, { isFroud: true });
     res.send(data);
   } catch (error) {
     console.log(error);
@@ -416,10 +467,15 @@ app.post("/reviews", async (req, res) => {
 
 // get all reviews
 app.get("/reviews", async (req, res) => {
-  const data = await Review.find({})
-    .populate("property")
-    .sort({ createdAt: -1 });
-  res.send(data);
+  try {
+    const data = await Review.find({})
+      .populate("property")
+      .sort({ createdAt: -1 });
+    res.send(data);
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
 });
 
 // get specific reviews
@@ -454,7 +510,7 @@ app.delete("/reviews/:id", async (req, res) => {
     res.send(error);
   }
 });
-// --------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------
 
 // wishList Route
 // --------------------------------------------------------------------------------------------------
@@ -475,8 +531,15 @@ app.post("/wishlists", async (req, res) => {
 });
 
 app.get("/wishlists/offers", async (req, res) => {
-  const data = await Offer.find({}).populate("property");
-  res.send(data);
+  try {
+    const data = await Offer.find({})
+      .populate("property")
+      .sort({ createdAt: -1 });
+    res.send(data);
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
 });
 
 // get specific wishlist
@@ -508,10 +571,45 @@ app.delete("/wishlists/:id", async (req, res) => {
 app.patch("/wishlists/offers/:id", async (req, res) => {
   try {
     const body = req.body;
-    const data = await Offer.findByIdAndUpdate(req.params.id, {
-      status: body.status,
-    });
-    res.send(data);
+
+    if (body.status === "accepted") {
+      // Find the offer with the given offerId
+      const offer = await Offer.findById(req.params.id);
+
+      if (!offer) {
+        console.log("Offer not found");
+        res.send("Offer not found");
+        return;
+      }
+
+      // Find the property associated with the offer
+      const property = await Property.findById(offer.property);
+
+      if (!property) {
+        console.log("Property not found for the offer");
+        res.send("Offer's property not found");
+        return;
+      }
+
+      // Update all offers(reject) associated with the property
+      await Offer.updateMany(
+        { property: property._id },
+        { $set: { status: "rejected" } }
+      );
+
+      // Now accept only the offer that is clicked / send
+      await Offer.findByIdAndUpdate(req.params.id, {
+        status: body.status,
+      });
+
+      console.log("Offer statuses updated successfully");
+      res.send("successfully accept the offer and reject all associate offer");
+    } else {
+      const data = await Offer.findByIdAndUpdate(req.params.id, {
+        status: body.status,
+      });
+      res.send(data);
+    }
   } catch (error) {
     console.log(error);
     res.send(error);
