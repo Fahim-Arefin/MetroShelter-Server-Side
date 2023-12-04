@@ -39,11 +39,11 @@ mongoose
 
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
-    // origin: [
-    //   "https://metroshelter-7a7d6.web.app",
-    //   "https://metroshelter-7a7d6.firebaseapp.com",
-    // ],
+    // origin: ["http://localhost:5173"],
+    origin: [
+      "https://metroshelter-7a7d6.web.app",
+      "https://metroshelter-7a7d6.firebaseapp.com",
+    ],
     credentials: true,
   })
 );
